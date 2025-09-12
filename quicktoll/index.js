@@ -1,7 +1,6 @@
 import { registerRootComponent } from 'expo';
-
-import navigation from '../navigation/navigation';
+import StackNavigator from './navigation/StackNavigator';
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);
 // It also ensures that whether you load the app in Expo Go or in a native build,
 // the environment is set up appropriately
-registerRootComponent(navigation);
+registerRootComponent(StackNavigator);
