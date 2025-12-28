@@ -80,6 +80,7 @@ export default function StackNavigator() {
         <Stack.Screen name="LogOutScreen" component={LogOutScreen} />
         <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
         <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+        <Stack.Screen name="HomeScreen" component={HomeScreen}/>
         {/* Main App with Tab Navigation - CORRECCIÓN AQUÍ */}
         <Stack.Screen name="MainApp" component={MainTabNavigator} />
         

@@ -1,39 +1,17 @@
-import React from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from '@react-navigation/native';
+import { supabase } from '../../lib/supabase';
+
 
 const VehicleScreen = ({ navigation }) => {
-  // Datos de ejemplo para los vehículos
-  const vehicles = [
-    { 
-      id: '1', 
-      licensePlate: 'ABC-123', 
-      model: 'Toyota Camry 2023', 
-      type: 'Sedán',
-      color: 'Rojo',
-      active: true
-    },
-    { 
-      id: '2', 
-      licensePlate: 'XYZ-456', 
-      model: 'Honda Civic 2022', 
-      type: 'Sedán',
-      color: 'Azul',
-      active: false
-    },
-    { 
-      id: '3', 
-      licensePlate: 'DEF-789', 
-      model: 'Ford F-150 2024', 
-      type: 'Pickup',
-      color: 'Negro',
-      active: true
-    },
-  ];
+  const [vehicles,setVehicles] = useState([]);
 
   const getVehicleIcon = (type) => {
     switch(type.toLowerCase()) {
-      case 'sedán':
+      case 'sedan':
         return 'car-sport';
       case 'pickup':
         return 'car';
@@ -43,6 +21,26 @@ const VehicleScreen = ({ navigation }) => {
         return 'car';
     }
   };
+
+  const handleGetVehicles = async () => {
+     try {
+      const { data, error } = await supabase
+            .from('vehicles')
+            .select('*');
+      return data;
+    } catch (error) {
+      console.error("Error al obtener vehiculos:", error);
+      throw error;
+    }};
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const fetchUser = async () => {
+          setVehicles(await handleGetVehicles());
+        };
+        fetchUser();
+      },[])
+    );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -81,8 +79,8 @@ const VehicleScreen = ({ navigation }) => {
                   />
                 </View>
                 <View style={styles.vehicleInfo}>
-                  <Text style={styles.licensePlate}>{vehicle.licensePlate}</Text>
-                  <Text style={styles.model}>{vehicle.model}</Text>
+                  <Text style={styles.licensePlate}>{vehicle.license_plate}</Text>
+                  <Text style={styles.model}>{vehicle.name}</Text>
                 </View>
                 <View style={styles.vehicleStatus}>
                   <View style={[

@@ -1,18 +1,78 @@
-import React from 'react';
-import { View, Text, SafeAreaView, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { supabase } from '../../lib/supabase';
+
 
 const UserScreen = ({ navigation }) => {
-  // Datos de ejemplo del usuario
-  const user = {
-    name: "Alejandro Alejandre",
-    id: "1234567890",
-    email: "alejandro@example.com",
-    phone: "+52 352 106 5471",
-    status: "Active",
-    joinDate: "15 Ene 2024",
-    avatar: require('../../assets/user.png') 
-  };
+  const [user, setUser] = useState({
+    name: "",
+    id: "",
+    email: "",
+    phone: "",
+    status: false,
+    vehiclesCount: 0,
+    transactions:0,
+    joinDate: "",
+    avatar: require('../../assets/user.png')
+  });
+
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, phone, status, created_at')
+        .eq('id', authUser.id)
+        .single();
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const { count, error: vehiclesError } = await supabase
+        .from('vehicles')
+        .select('*', { count: 'exact', head: true })
+        .eq('profiles_id', authUser.id);
+
+      if (vehiclesError) {
+        console.error(vehiclesError);
+        return;
+      }
+
+      const { transactionCount,error:transactionError } = await supabase
+        .from('transactions')
+        .select('*', { transactionCount: 'exact',head: true })
+        .eq('profiles_id', authUser.id);
+
+      if (transactionError) {
+        console.error(transactionError);
+        return;
+      }
+
+      setUser({
+        id: data.id,
+        name: data.full_name,
+        email: data.email,
+        phone: data.phone ?? '',
+        status: data.status,
+        joinDate: data.created_at,
+        vehiclesCount: count ?? 0,
+        transactions: count ?? 0,
+        avatar: require('../../assets/user.png')
+      });
+    };
+
+    loadUser();
+  }, []);
+
+
+  
 
   const menuOptions = [
     {
@@ -90,12 +150,12 @@ const UserScreen = ({ navigation }) => {
           
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>3</Text>
+              <Text style={styles.statNumber}>{user.vehiclesCount}</Text>
               <Text style={styles.statLabel}>Vehículos</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>12</Text>
+              <Text style={styles.statNumber}>{user.transactions}</Text>
               <Text style={styles.statLabel}>Viajes</Text>
             </View>
             <View style={styles.statDivider} />

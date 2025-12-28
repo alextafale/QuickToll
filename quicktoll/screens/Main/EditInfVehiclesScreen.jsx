@@ -1,43 +1,91 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert,View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
+import { supabase } from '../../lib/supabase';
 
 const EditInfVehiclesScreen = ({ navigation, route }) => {
     // Datos del vehículo que se reciben por parámetros o estado inicial
-    const [vehicle, setVehicle] = useState(route.params?.vehicle || {
-        id: '',
-        licensePlate: '',
-        model: '',
-        color: '',
-        year: '',
-        tagNumber: ''
+    const [vehicle, setVehicle] = useState(() => {
+        const v = route.params?.vehicle;
+
+        return v
+            ? {
+                ...v,
+                year: v.year !== null && v.year !== undefined
+                ? String(v.year)
+                : ''
+            }
+            : {
+                id: '',
+                license_plate: '',
+                name: '',
+                color: '',
+                year: ''
+            };
     });
 
-    const handleSave = () => {
-        // Validación básica
-        if (!vehicle.licensePlate || !vehicle.model) {
-            alert('Por favor completa los campos obligatorios');
+
+    const handleSave = async () => {
+        if (!vehicle.license_plate || !vehicle.name || !vehicle.color || !vehicle.year.trim() === '') {
+            Alert.alert('Error','Por favor completa los campos obligatorios');
             return;
         }
 
-        // Aquí iría la lógica para guardar los cambios
-        console.log('Vehículo actualizado:', vehicle);
-        
-        // Navegar de regreso con los datos actualizados
-        navigation.navigate('VehicleScreen', { updatedVehicle: vehicle });
+        try {
+            const { data: { user } } = await supabase.auth.getUser(); 
+            if (!user) {
+                Alert.alert('Error', 'Debe iniciar sesión.');
+                return;
+            }
+            const { data, error } = await supabase
+                .from('vehicles')
+                .update({
+                    name:vehicle.name, 
+                    license_plate: vehicle.license_plate,
+                    color: vehicle.color,
+                    year: Number(vehicle.year)
+                })
+                .eq('id',vehicle.id)
+                .select().single();
+            console.log('Respuesta backend:', data);
+            navigation.goBack();
+        } catch (error) {
+            console.error(error);
+        }
     };
 
-    const handleDelete = () => {
-        // Mostrar confirmación antes de eliminar
+    const handleDelete = async () => {    
         alert('¿Estás seguro de que quieres eliminar este vehículo?');
-        // Lógica para eliminar el vehículo
-        navigation.navigate('VehicleScreen', { deletedVehicleId: vehicle.id });
+        try {
+            const { data: { user } } = await supabase.auth.getUser(); 
+            if (!user) {
+                Alert.alert('Error', 'Debe iniciar sesión.');
+                return;
+            }
+            const userId = user.id;
+
+            const { data, error } = await supabase
+                .from('vehicles')
+                .delete()
+                .eq('id',vehicle.id)
+                .select()
+                .single();
+            console.log('Respuesta backend:', data);
+
+            navigation.goBack();
+        } catch (error) {
+            
+        }
+        
     };
 
     return (
         <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView 
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
                 style={styles.keyboardAvoid}
             >
                 <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -55,8 +103,8 @@ const EditInfVehiclesScreen = ({ navigation, route }) => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Ej: ABC-123"
-                                value={vehicle.licensePlate}
-                                onChangeText={(text) => setVehicle({...vehicle, licensePlate: text})}
+                                value={vehicle.license_plate}
+                                onChangeText={(text) => setVehicle({...vehicle, license_plate: text})}
                             />
                         </View>
 
@@ -65,8 +113,8 @@ const EditInfVehiclesScreen = ({ navigation, route }) => {
                             <TextInput
                                 style={styles.input}
                                 placeholder="Ej: Toyota Corolla"
-                                value={vehicle.model}
-                                onChangeText={(text) => setVehicle({...vehicle, model: text})}
+                                value={vehicle.name}
+                                onChangeText={(text) => setVehicle({...vehicle, name: text})}
                             />
                         </View>
 

@@ -1,14 +1,37 @@
-import {View, Text, SafeAreaView, TouchableOpacity, StyleSheet, Image, ScrollView, StatusBar} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, StatusBar} from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 export const HomeScreen = ({navigation}) => {
-    const tollHistory = [
-        { id: '1', name: 'Guadalajara-Morelia', date: '2023-10-15', time: '08:30 AM', amount: '$45.00 MXN', location: 'Km 23 Carretera México-Toluca' },
-        { id: '2', name: 'Toluca-México', date: '2023-10-14', time: '07:15 PM', amount: '$35.50 MXN', location: 'Autopista México-Querétaro' },
-        { id: '3', name: 'Periférico Norte', date: '2023-10-13', time: '02:45 PM', amount: '$28.75 MXN', location: 'Periférico Norte' },
-        { id: '4', name: 'La Piedad-Guadalajara', date: '2023-10-12', time: '11:20 AM', amount: '$52.30 MXN', location: 'Autopista del Sol' },
-        { id: '5', name: 'Circuito Exterior Mexiquense', date: '2023-10-11', time: '06:40 PM', amount: '$40.00 MXN', location: 'Circuito Exterior Mexiquense' },
-    ];
+  const [tollHistory, setTollHistoy] = useState([]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchUser = async () => {
+        setTollHistoy(await handleGetTollHistory());
+      };
+      fetchUser();
+    },[])
+  );
+
+  const handleGetTollHistory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*,tolls_id(name,state),rates_id(amount)');
+      if(error){
+        console.log(error);
+      }
+      return data;
+      } catch (error) {
+        console.error("Error al obtener historial:", error);
+        throw error;
+      }
+  };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -40,13 +63,13 @@ export const HomeScreen = ({navigation}) => {
                   </View>
                   
                   <View style={styles.tollInfo}>
-                    <Text style={styles.tollName}>{toll.name}</Text>
-                    <Text style={styles.tollLocation}>{toll.location}</Text>
+                    <Text style={styles.tollName}>{toll.tolls_id.name}</Text>
+                    <Text style={styles.tollLocation}>{toll.tolls_id.state}</Text>
                     <Text style={styles.tollDate}>{toll.date} • {toll.time}</Text>
                   </View>
                   
                   <View style={styles.tollAmountContainer}>
-                    <Text style={styles.tollAmount}>{toll.amount}</Text>
+                    <Text style={styles.tollAmount}>{toll.rates_id.amount}</Text>
                   </View>
                 </View>
               ))}

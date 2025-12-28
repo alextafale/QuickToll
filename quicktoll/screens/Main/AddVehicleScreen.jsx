@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React,{ useState, useContext } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Menu } from 'react-native-paper';
 import { 
   View, 
   Text, 
-  SafeAreaView, 
   ScrollView, 
   TouchableOpacity, 
   StyleSheet, 
@@ -16,24 +17,31 @@ import {
   Keyboard
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../../lib/supabase';
 
+
+//import { set } from 'mongoose';
 const AddVehicleScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
     vehicleName: '',
     licensePlate: '',
     ownerName: '',
     carColor: '',
-    year: '',
-    model: ''
+    year: ''
   });
+
+  const [type, setType] = useState('Sedan');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [visible, setVisible] = useState(false);
+  const toggleMenu = () => setVisible(!visible);
 
   const validateForm = () => {
     const newErrors = {};
 
     if (!formData.vehicleName.trim()) {
-      newErrors.vehicleName = 'Vehicle name is required';
+      newErrors.vehicleName = 'Vehicle model is required';
     }
 
     if (!formData.licensePlate.trim()) {
@@ -46,36 +54,49 @@ const AddVehicleScreen = ({ navigation }) => {
       newErrors.ownerName = 'Owner name is required';
     }
 
-    if (!formData.carColor.trim()) {
-      newErrors.carColor = 'Car color is required';
+    if(!formData.year.trim()){
+      newErrors.year = 'Year of car is required'
     }
 
-    if (formData.year && (formData.year < 1900 || formData.year > new Date().getFullYear() + 1)) {
-      newErrors.year = 'Enter a valid year';
+    if (!formData.carColor.trim()) {
+      newErrors.carColor = 'Car color is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
       setIsSubmitting(true);
-      
-      // Simulate API call
-      setTimeout(() => {
-        setIsSubmitting(false);
-        Alert.alert(
-          "Success", 
-          "Vehicle added successfully!",
-          [
-            {
-              text: "OK",
-              onPress: () => navigation.navigate('VehicleScreen', { refresh: true })
-            }
-          ]
-        );
-      }, 1500);
+      const { data: { user } } = await supabase.auth.getUser(); 
+      if (!user) {
+          Alert.alert('Error', 'Debe iniciar sesión.');
+          return;
+      }
+      const userId = user.id;
+      const { data, error } = await supabase
+        .from('vehicles')
+        .insert({
+          name:formData.vehicleName, 
+          license_plate: formData.licensePlate, 
+          owner: formData.ownerName,
+          color: formData.carColor,
+          type: type,
+          year: formData.year,
+          profiles_id: userId
+        }).select().single();
+      navigation.goBack();
+
+      if (error) {
+        console.error("Error from Supabase:", error);
+        const errorMessage = (error.code === '23505') 
+        ? 'The license plate is already insert.' 
+        : `Error: ${error.message}`;
+                  
+        Alert.alert('Error', errorMessage);
+        throw error;
+      }
     }
   };
 
@@ -98,6 +119,7 @@ const AddVehicleScreen = ({ navigation }) => {
       <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
         style={styles.keyboardAvoid}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

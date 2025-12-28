@@ -1,5 +1,7 @@
 import {React} from 'react'
-import {View, SafeAreaView, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
+
 const PaymentsMethodsScreen = () => {
     return (
         <SafeAreaView>

@@ -6,32 +6,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from "expo-web-browser";
-import { useAuthRequest, makeRedirectUri } from "expo-auth-session/providers/google";
-import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../Backend/Firebase/FirebaseConfig';
+import { supabase } from "../../lib/supabase";
 
-WebBrowser.maybeCompleteAuthSession();
-
-const CLIENT_ID = "3394613431143-vbreqlodokbfk63lr68u1cnpj9vs5elb.apps.googleusercontent.com"; 
 
 export default function LogInScreen({ navigation }) {
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [secureEntry, setSecureEntry] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
-  const [request, response, promptAsync] = useAuthRequest({
-    expoClientId: CLIENT_ID, // Expo Client ID
-    webClientId: CLIENT_ID,  // Web Client ID
-    iosClientId: CLIENT_ID,  // iOS Client ID
-    androidClientId: CLIENT_ID, // Android Client ID
-    redirectUri: makeRedirectUri({
-      native: "com.app_pf:/oauthredirect", // App.json -> scheme
-    }),
-  });
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -41,70 +25,34 @@ export default function LogInScreen({ navigation }) {
     }).start();
   }, []);
 
-  // Efecto para manejar la respuesta de Google
-  useEffect(() => {
-    const logInWithGoogle = async () => {
-      try {
-        if (response?.type === "success") {
-          setGoogleLoading(true);
-          const { authentication } = response;
-          if (authentication?.accessToken) {
-            const credential = GoogleAuthProvider.credential(null, authentication.accessToken);
-            await signInWithCredential(auth, credential);
-
-            Alert.alert("Éxito", "Inicio de sesión con Google exitoso");
-            navigation.navigate("MainApp", { screen: "HomeScreen" });
-          }
-        }
-      } catch (error) {
-        console.error("Error con Google Sign-In:", error);
-        Alert.alert("Error", "No se pudo iniciar sesión con Google");
-      } finally {
-        setGoogleLoading(false);
-      }
-    };
-
-    logInWithGoogle();
-  }, [response]);
 
   // Login con correo y contraseña
   const handleLogin = async () => {
     if (!correo || !contraseña) {
-      Alert.alert('Error', 'Por favor ingresa correo y contraseña');
+      Alert.alert("Error", "Ingresa correo y contraseña");
       return;
     }
 
     setIsLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, correo, contraseña);
-      Alert.alert('Éxito', 'Inicio de sesión exitoso');
-      navigation.navigate('MainApp', { screen: 'HomeScreen' });
-    } catch (error) {
-      console.error("Error logging in:", error);
-      let errorMessage = 'Error al iniciar sesión';
-      
-      switch (error.code) {
-        case 'auth/invalid-email':
-          errorMessage = 'Correo electrónico inválido';
-          break;
-        case 'auth/user-disabled':
-          errorMessage = 'Esta cuenta ha sido deshabilitada';
-          break;
-        case 'auth/user-not-found':
-          errorMessage = 'Usuario no encontrado';
-          break;
-        case 'auth/wrong-password':
-          errorMessage = 'Contraseña incorrecta';
-          break;
-        default:
-          errorMessage = error.message;
-      }
-      
-      Alert.alert('Error', errorMessage);
-    } finally {
-      setIsLoading(false);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: correo,
+      password: contraseña,
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      Alert.alert("Error", error.message);
+      return;
     }
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainApp' }],
+    });
   };
+
 
   return (
     <SafeAreaView style={styles.safeStyle}>
@@ -192,20 +140,6 @@ export default function LogInScreen({ navigation }) {
             </View>
             
             <View style={styles.socialLoginContainer}>
-              <TouchableOpacity 
-                style={[styles.socialButton, (isLoading || googleLoading) && styles.buttonDisabled]} 
-                onPress={() => promptAsync()} // 👈 corregido
-                disabled={isLoading || googleLoading}
-              >
-                {googleLoading ? (
-                  <Ionicons name="refresh" size={20} color="#DB4437" />
-                ) : (
-                  <>
-                    <Ionicons name="logo-google" size={20} color="#DB4437" />
-                    <Text style={styles.socialButtonText}>Google</Text>
-                  </>
-                )}
-              </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.socialButton, isLoading && styles.buttonDisabled]}

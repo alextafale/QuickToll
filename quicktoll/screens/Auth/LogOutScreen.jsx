@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen({ navigation }) {
   const handleLogout = () => {
@@ -14,7 +15,7 @@ export default function SettingsScreen({ navigation }) {
         },
         { 
           text: "Cerrar sesión", 
-          onPress: () => navigation.navigate('WelcomeScreen'),
+          onPress: () => navigation.reset({index: 0, routes: [{ name: 'WelcomeScreen' }],}),
           style: "destructive"
         }
       ]

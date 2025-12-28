@@ -1,14 +1,37 @@
-import { View, Text, SafeAreaView, StyleSheet, Platform, ImageBackground,StatusBar } from 'react-native';
+import { View, StyleSheet, Platform, ImageBackground, StatusBar } from 'react-native';
 import { useEffect } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { supabase } from '../lib/supabase';
 
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.navigate('WelcomeScreen');
-    }, 5000);
+    let mounted = true;
 
-    return () => clearTimeout(timer);
-  }, [navigation]);
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      if (session) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'MainApp' }],
+        });
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'WelcomeScreen' }],
+        });
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -28,10 +51,9 @@ const SplashScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
   },
   imageBackground: {
-    flex: 1
+    flex: 1,
   },
 });
 

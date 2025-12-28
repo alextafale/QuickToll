@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  SafeAreaView,
   StatusBar,
   Text,
   TextInput,
@@ -16,6 +15,8 @@ import {
   Keyboard
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const AddCardScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({

@@ -1,5 +1,7 @@
-import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 export const PaymentsScreen = ({ navigation }) => {
     return (
