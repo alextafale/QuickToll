@@ -7,6 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from "../../lib/supabase";
+import * as Linking from 'expo-linking';
 
 
 export default function LogInScreen({ navigation }) {
@@ -24,6 +25,43 @@ export default function LogInScreen({ navigation }) {
       useNativeDriver: true,
     }).start();
   }, []);
+
+  
+  const handleFacebookLogin = async () => {
+    console.log("Sesion con facebook");
+    try {
+      setIsLoading(true);
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      }
+    } catch {
+      Alert.alert('Error', 'No se pudo iniciar sesión con Facebook');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
+  /*
+  Esto fue para prueba, se hizo en web
+  const handleFacebookLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+
+    if (error) alert(error.message);
+  };
+  */
+
+
 
 
   // Login con correo y contraseña
@@ -140,11 +178,19 @@ export default function LogInScreen({ navigation }) {
             </View>
             
             <View style={styles.socialLoginContainer}>
-              
+              <TouchableOpacity
+                style={[styles.socialButton, isLoading  && styles.buttonDisabled]}
+                onPress={() => Alert.alert("Próximamente", "Inicio de sesión con Google aún no disponible")}
+              >
+                <Ionicons name="logo-google" size={20} color="#DB4437" />
+                <Text style={styles.socialButtonText}>Google</Text>
+              </TouchableOpacity>
+
+
               <TouchableOpacity 
                 style={[styles.socialButton, isLoading && styles.buttonDisabled]}
                 disabled={isLoading}
-                onPress={() => Alert.alert('Facebook', 'Próximamente disponible')}
+                onPress={handleFacebookLogin}
               >
                 <Ionicons name="logo-facebook" size={20} color="#4267B2" />
                 <Text style={styles.socialButtonText}>Facebook</Text>

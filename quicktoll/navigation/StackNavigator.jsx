@@ -6,6 +6,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import NavigationBar from '../components/NavigationBar';
 
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+
+
 // Imports Auth Screens
 import SignUpScreen from '../screens/Auth/SignUpScreen';
 import LogInScreen from '../screens/Auth/LogInScreen';
@@ -68,33 +72,63 @@ function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
+
+
 // Stack Navigator for the entire app
 export default function StackNavigator() {
-  return (
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Obtener sesión inicial
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setLoading(false);
+    });
+
+    // Escuchar cambios de sesión
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  if (loading) return null; // o tu Splash
+
+    return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SplashScreen" screenOptions={{ headerShown: false }}>
-        {/* Auth Flow Screens */}
-        <Stack.Screen name="SplashScreen" component={SplashScreen} />
-        <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
-        <Stack.Screen name="LogInScreen" component={LogInScreen} />
-        <Stack.Screen name="LogOutScreen" component={LogOutScreen} />
-        <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-        <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
-        <Stack.Screen name="HomeScreen" component={HomeScreen}/>
-        {/* Main App with Tab Navigation - CORRECCIÓN AQUÍ */}
-        <Stack.Screen name="MainApp" component={MainTabNavigator} />
-        
-        {/* Modal Screens (accessed from tabs) */}
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {session ? (
+          // Usuario logueado
+          <>
+            <Stack.Screen name="MainApp" component={MainTabNavigator} />
+          </>
+        ) : (
+          // Usuario NO logueado
+          <>
+            <Stack.Screen name="SplashScreen" component={SplashScreen} />
+            <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+            <Stack.Screen name="LogInScreen" component={LogInScreen} />
+            <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+            <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+          </>
+        )}
+
+        {/* Screens accesibles desde la app */}
         <Stack.Screen name="AddCardScreen" component={AddCardScreen} />
         <Stack.Screen name="HistoryScreen" component={HistoryScreen} />
         <Stack.Screen name="AddBalancesScreen" component={AddBalancesScreen} />
         <Stack.Screen name="ContactUsScreen" component={ContactUsScreen} />
         <Stack.Screen name="HelpCenterScreen" component={HelpCenterScreen} />
         <Stack.Screen name="PaymentsMethodsScreen" component={PaymentsMethodsScreen} />
-        <Stack.Screen name="VehicleScreen" component={VehicleScreen} />
         <Stack.Screen name="AddVehicleScreen" component={AddVehicleScreen} />
         <Stack.Screen name="UserScreen" component={UserScreen} />
-        <Stack.Screen name="EditInfVehiclesScreen" component={EditInfVehiclesScreen}  />
+        <Stack.Screen name="EditInfVehiclesScreen" component={EditInfVehiclesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
