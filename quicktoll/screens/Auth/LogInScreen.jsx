@@ -48,7 +48,7 @@ export default function LogInScreen({ navigation }) {
   
 
   /*
-  Esto fue para prueba, se hizo en web
+  //Test para web
   const handleFacebookLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'facebook',
@@ -60,6 +60,53 @@ export default function LogInScreen({ navigation }) {
     if (error) alert(error.message);
   };
   */
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+
+      const redirectTo = Linking.createURL('login-callback');
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'No se pudo iniciar sesión con Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
+  /*
+  //Test para web
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        alert('Error: ' + error.message);
+      }
+    } catch (err) {
+      alert('No se pudo iniciar sesión con Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  */
+
 
 
 
@@ -180,7 +227,7 @@ export default function LogInScreen({ navigation }) {
             <View style={styles.socialLoginContainer}>
               <TouchableOpacity
                 style={[styles.socialButton, isLoading  && styles.buttonDisabled]}
-                onPress={() => Alert.alert("Próximamente", "Inicio de sesión con Google aún no disponible")}
+                onPress={handleGoogleLogin}
               >
                 <Ionicons name="logo-google" size={20} color="#DB4437" />
                 <Text style={styles.socialButtonText}>Google</Text>
