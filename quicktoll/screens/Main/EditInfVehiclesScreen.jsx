@@ -4,7 +4,6 @@ import { Alert,View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, 
 import { Ionicons } from '@expo/vector-icons';
 
 import { supabase } from '../../lib/supabase';
-import { useSQLiteContext } from 'expo-sqlite';
 import { upsertVehicle } from '../../db/sqlite';
 
 const EditInfVehiclesScreen = ({ navigation, route }) => {

@@ -1,7 +1,6 @@
 import { Alert,View, Text, ScrollView, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSQLiteContext } from 'expo-sqlite';
 import { clearAllLocalData } from '../../db/sqlite';
 import { supabase } from '../../lib/supabase';
 

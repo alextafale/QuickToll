@@ -20,7 +20,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 
 import { upsertVehicle } from '../../db/sqlite';
-import { useSQLiteContext } from 'expo-sqlite';
 
 
 //import { set } from 'mongoose';

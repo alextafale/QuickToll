@@ -36,7 +36,6 @@ import HelpCenterScreen from '../screens/Support/HelpCenterScreen';
 // Splash
 import SplashScreen from '../screens/SplashScreen';
 import WelcomeScreen from '../screens/Main/WelcomeScreen';
-import { createTables } from "../db/sqlite";
 
 // CONST Stack AND TABS
 const Stack = createStackNavigator();

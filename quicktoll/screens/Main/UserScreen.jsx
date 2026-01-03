@@ -3,7 +3,6 @@ import { Alert, View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar,
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from '../../lib/supabase';
-import { useSQLiteContext } from 'expo-sqlite';
 import { clearAllLocalData, getActiveVehicleCount,getTransactionCount,getProfile } from '../../db/sqlite';
 
 const UserScreen = ({ navigation }) => {

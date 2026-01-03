@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase';
-import { useSQLiteContext } from 'expo-sqlite';
 import { getVehicles } from '../../db/sqlite';
 
 

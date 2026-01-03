@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSQLiteContext } from 'expo-sqlite';
 import { supabase } from '../lib/supabase';
 import SplashScreen from '../screens/SplashScreen';
 import MainTabNavigator from './MainTabNavigator';

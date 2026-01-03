@@ -4,8 +4,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSQLiteContext } from "expo-sqlite";
-import { getLastTransactions } from '../../db/sqlite'
 
 
 export const HomeScreen = ({navigation}) => {

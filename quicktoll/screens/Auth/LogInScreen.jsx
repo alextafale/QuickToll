@@ -8,17 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from "../../lib/supabase";
 import * as Linking from 'expo-linking';
-import { useSQLiteContext } from "expo-sqlite";
-import {
-  createTables,
-  getProfile,
-  clearAllLocalData,
-  syncProfileFromSupabase,
-  syncVehiclesFromSupabase,
-  syncCardsFromSupabase,
-  syncTransactionsFromSupabase,
-  syncTollsFromSupabase
-} from '../../db/sqlite'
+
 
 export default function LogInScreen({ navigation }) {
   const [correo, setCorreo] = useState('');
