@@ -4,9 +4,12 @@ import { Alert,View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, 
 import { Ionicons } from '@expo/vector-icons';
 
 import { supabase } from '../../lib/supabase';
+import { useSQLiteContext } from 'expo-sqlite';
+import { upsertVehicle } from '../../db/sqlite';
 
 const EditInfVehiclesScreen = ({ navigation, route }) => {
     // Datos del vehículo que se reciben por parámetros o estado inicial
+    const db = useSQLiteContext();
     const [vehicle, setVehicle] = useState(() => {
         const v = route.params?.vehicle;
 
@@ -49,6 +52,7 @@ const EditInfVehiclesScreen = ({ navigation, route }) => {
                 })
                 .eq('id',vehicle.id)
                 .select().single();
+            await upsertVehicle(db,data);
             console.log('Respuesta backend:', data);
             navigation.goBack();
         } catch (error) {
@@ -68,10 +72,12 @@ const EditInfVehiclesScreen = ({ navigation, route }) => {
 
             const { data, error } = await supabase
                 .from('vehicles')
-                .delete()
-                .eq('id',vehicle.id)
+                .update({ active: 0 })
+                .eq('id', vehicle.id)
                 .select()
                 .single();
+
+            await upsertVehicle(db,data);
             console.log('Respuesta backend:', data);
 
             navigation.goBack();

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
+import { Alert, View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from '../../lib/supabase';
-
+import { useSQLiteContext } from 'expo-sqlite';
+import { clearAllLocalData, getActiveVehicleCount,getTransactionCount,getProfile } from '../../db/sqlite';
 
 const UserScreen = ({ navigation }) => {
+  const db = useSQLiteContext()
   const [user, setUser] = useState({
     name: "",
     id: "",
@@ -21,57 +23,47 @@ const UserScreen = ({ navigation }) => {
 
   useEffect(() => {
     const loadUser = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) return;
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, phone, status, created_at')
-        .eq('id', authUser.id)
-        .single();
-
-      if (error) {
+      try{
+        const profileData = await getProfile(db);
+        const vehiclesCount = await getActiveVehicleCount(db);
+        const transactionCount = await getTransactionCount(db);
+        setUser({
+          id: profileData.id,
+          name: profileData.full_name,
+          email: profileData.email,
+          phone: profileData.phone ?? '',
+          status: profileData.status,
+          joinDate: profileData.created_at,
+          vehiclesCount: vehiclesCount ?? 0,
+          transactions: transactionCount ?? 0,
+          avatar: require('../../assets/user.png')
+        });
+      }catch(error){
         console.error(error);
-        return;
       }
-
-      const { count, error: vehiclesError } = await supabase
-        .from('vehicles')
-        .select('*', { count: 'exact', head: true })
-        .eq('profiles_id', authUser.id);
-
-      if (vehiclesError) {
-        console.error(vehiclesError);
-        return;
-      }
-
-      const { transactionCount,error:transactionError } = await supabase
-        .from('transactions')
-        .select('*', { transactionCount: 'exact',head: true })
-        .eq('profiles_id', authUser.id);
-
-      if (transactionError) {
-        console.error(transactionError);
-        return;
-      }
-
-      setUser({
-        id: data.id,
-        name: data.full_name,
-        email: data.email,
-        phone: data.phone ?? '',
-        status: data.status,
-        joinDate: data.created_at,
-        vehiclesCount: count ?? 0,
-        transactions: count ?? 0,
-        avatar: require('../../assets/user.png')
-      });
     };
 
     loadUser();
   }, []);
 
-
+  const confirmLogout = () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro de que quieres cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: async () => {
+            await clearAllLocalData(db);
+            await supabase.auth.signOut();
+            console.log("Se cerro");
+          },
+        },
+      ]
+    );
+  };
   
 
   const menuOptions = [
@@ -219,7 +211,7 @@ const UserScreen = ({ navigation }) => {
         {/* Botón de Cerrar Sesión */}
         <TouchableOpacity 
           style={styles.logoutButton}
-          onPress={() => navigation.navigate('LogOutScreen')}
+          onPress={confirmLogout}
         >
           <Ionicons name="log-out-outline" size={20} color="#DC2626" />
           <Text style={styles.logoutText}>Cerrar Sesión</Text>

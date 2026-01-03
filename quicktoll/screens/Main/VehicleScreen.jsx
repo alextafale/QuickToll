@@ -4,9 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase';
+import { useSQLiteContext } from 'expo-sqlite';
+import { getVehicles } from '../../db/sqlite';
 
 
 const VehicleScreen = ({ navigation }) => {
+  const db = useSQLiteContext();
   const [vehicles,setVehicles] = useState([]);
 
   const getVehicleIcon = (type) => {
@@ -24,9 +27,8 @@ const VehicleScreen = ({ navigation }) => {
 
   const handleGetVehicles = async () => {
      try {
-      const { data, error } = await supabase
-            .from('vehicles')
-            .select('*');
+      const data = await getVehicles(db);
+      console.log(data);
       return data;
     } catch (error) {
       console.error("Error al obtener vehiculos:", error);

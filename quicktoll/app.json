@@ -32,7 +32,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-sqlite"
     ],
     "extra": {
       "SUPABASE_URL": "https://ebfdijdxyxnsrvaldisx.supabase.co",

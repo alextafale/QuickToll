@@ -7,7 +7,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from "../../lib/supabase";
-
+import * as Linking from 'expo-linking';
+import { useSQLiteContext } from "expo-sqlite";
+import {
+  createTables,
+  getProfile,
+  clearAllLocalData,
+  syncProfileFromSupabase,
+  syncVehiclesFromSupabase,
+  syncCardsFromSupabase,
+  syncTransactionsFromSupabase,
+  syncTollsFromSupabase
+} from '../../db/sqlite'
 
 export default function LogInScreen({ navigation }) {
   const [correo, setCorreo] = useState('');
@@ -15,6 +26,8 @@ export default function LogInScreen({ navigation }) {
   const [secureEntry, setSecureEntry] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const db = useSQLiteContext();
+  
 
 
   useEffect(() => {
@@ -24,6 +37,90 @@ export default function LogInScreen({ navigation }) {
       useNativeDriver: true,
     }).start();
   }, []);
+
+  
+  const handleFacebookLogin = async () => {
+    console.log("Sesion con facebook");
+    try {
+      setIsLoading(true);
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      }
+    } catch {
+      Alert.alert('Error', 'No se pudo iniciar sesión con Facebook');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
+  /*
+  //Test para web
+  const handleFacebookLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'facebook',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+
+    if (error) alert(error.message);
+  };
+  */
+
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+
+      const redirectTo = Linking.createURL('login-callback');
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'No se pudo iniciar sesión con Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
+  /*
+  //Test para web
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+
+      if (error) {
+        alert('Error: ' + error.message);
+      }
+    } catch (err) {
+      alert('No se pudo iniciar sesión con Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  */
+
+
+
 
 
   // Login con correo y contraseña
@@ -47,10 +144,6 @@ export default function LogInScreen({ navigation }) {
       return;
     }
 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'MainApp' }],
-    });
   };
 
 
@@ -140,11 +233,19 @@ export default function LogInScreen({ navigation }) {
             </View>
             
             <View style={styles.socialLoginContainer}>
-              
+              <TouchableOpacity
+                style={[styles.socialButton, isLoading  && styles.buttonDisabled]}
+                onPress={handleGoogleLogin}
+              >
+                <Ionicons name="logo-google" size={20} color="#DB4437" />
+                <Text style={styles.socialButtonText}>Google</Text>
+              </TouchableOpacity>
+
+
               <TouchableOpacity 
                 style={[styles.socialButton, isLoading && styles.buttonDisabled]}
                 disabled={isLoading}
-                onPress={() => Alert.alert('Facebook', 'Próximamente disponible')}
+                onPress={handleFacebookLogin}
               >
                 <Ionicons name="logo-facebook" size={20} color="#4267B2" />
                 <Text style={styles.socialButtonText}>Facebook</Text>
