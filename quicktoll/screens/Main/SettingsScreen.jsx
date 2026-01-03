@@ -1,8 +1,33 @@
-import { View, Text, ScrollView, TouchableOpacity, Switch, StyleSheet } from 'react-native';
+import { Alert,View, Text, ScrollView, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSQLiteContext } from 'expo-sqlite';
+import { clearAllLocalData } from '../../db/sqlite';
+import { supabase } from '../../lib/supabase';
 
 const SettingsScreen = ({ navigation }) => {
+
+  const db = useSQLiteContext();
+
+  const confirmLogout = () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro de que quieres cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: async () => {
+            await clearAllLocalData(db);
+            await supabase.auth.signOut();
+          },
+        },
+      ]
+    );
+  };
+
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView style={styles.scrollView}>
@@ -85,9 +110,9 @@ const SettingsScreen = ({ navigation }) => {
               <Icon name="chevron-right" size={24} color="#999" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.option} onPress={() => {navigation.navigate('LogOutScreen')}}>
+            <TouchableOpacity style={styles.option} onPress={confirmLogout}>
               <View style={styles.optionLeft}>
-                <Icon name="log-out" size={24} color="#333" style={styles.icon} />
+                <Icon name="logout" size={24} color="#333" style={styles.icon} />
                 <View style={styles.optionContent}>
                   <Text style={styles.optionTitle}>Log Out</Text>
                   <Text style={styles.optionDescription}>Log out of your account</Text>

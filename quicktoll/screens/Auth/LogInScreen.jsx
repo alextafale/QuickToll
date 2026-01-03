@@ -8,7 +8,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from "../../lib/supabase";
 import * as Linking from 'expo-linking';
-
+import { useSQLiteContext } from "expo-sqlite";
+import {
+  createTables,
+  getProfile,
+  clearAllLocalData,
+  syncProfileFromSupabase,
+  syncVehiclesFromSupabase,
+  syncCardsFromSupabase,
+  syncTransactionsFromSupabase,
+  syncTollsFromSupabase
+} from '../../db/sqlite'
 
 export default function LogInScreen({ navigation }) {
   const [correo, setCorreo] = useState('');
@@ -16,6 +26,8 @@ export default function LogInScreen({ navigation }) {
   const [secureEntry, setSecureEntry] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const db = useSQLiteContext();
+  
 
 
   useEffect(() => {
@@ -132,10 +144,6 @@ export default function LogInScreen({ navigation }) {
       return;
     }
 
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'MainApp' }],
-    });
   };
 
 

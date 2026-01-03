@@ -4,34 +4,32 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSQLiteContext } from "expo-sqlite";
+import { getLastTransactions } from '../../db/sqlite'
 
 
 export const HomeScreen = ({navigation}) => {
   const [tollHistory, setTollHistoy] = useState([]);
+  const db = useSQLiteContext();
+
+  const handleGetTollHistory = async () => {
+    try {
+      return await getLastTransactions(db,10);
+      } catch (error) {
+        console.error("Error al obtener historial:", error);
+        return [];
+      }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
       const fetchUser = async () => {
-        setTollHistoy(await handleGetTollHistory());
+        const history = await handleGetTollHistory();
+        setTollHistory(history);
       };
       fetchUser();
     },[])
   );
-
-  const handleGetTollHistory = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('*,tolls_id(name,state),rates_id(amount)');
-      if(error){
-        console.log(error);
-      }
-      return data;
-      } catch (error) {
-        console.error("Error al obtener historial:", error);
-        throw error;
-      }
-  };
 
     return (
         <SafeAreaView style={styles.container}>

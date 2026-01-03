@@ -1,7 +1,8 @@
 import * as WebBrowser from 'expo-web-browser';
 import { registerRootComponent } from 'expo';
-import StackNavigator from './navigation/StackNavigator';
-
+import App from './App';
 WebBrowser.maybeCompleteAuthSession();
+registerRootComponent(App);
 
-registerRootComponent(StackNavigator);
+
+
