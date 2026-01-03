@@ -1,5 +1,4 @@
 # QuickToll
-# QuickToll
 
 Una aplicación móvil moderna desarrollada con React Native y Expo para gestión eficiente de peajes.
 
