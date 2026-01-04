@@ -16,7 +16,6 @@ export default function LogInScreen({ navigation }) {
   const [secureEntry, setSecureEntry] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
-  const db = useSQLiteContext();
   
 
 

@@ -4,10 +4,7 @@ import { View } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
+
 export default function App() {
-  return (
-    <View>
-      
-    </View>
-  );
+  return <StackNavigator />;
 }
