@@ -8,6 +8,7 @@ quicktoll/node_modules/
 dist/
 web-build/
 expo-env.d.ts
+quicktoll/android/
 
 # Native
 .kotlin/
@@ -32,8 +33,11 @@ yarn-error.*
 
 # local env files
 .env
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> d6f92313315610fe5145cf3178fb2cf9676b0ffe
 
 # typescript
 *.tsbuildinfo
